@@ -1,0 +1,33 @@
+{
+  "name": "tronbot",
+  "version": "1.0.0",
+  "description": "Production-grade TRON USDT lock program with Telegram bot and admin dashboard",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\" \"npm run bot:dev\"",
+    "backend:dev": "cd backend && npm run dev",
+    "frontend:dev": "cd frontend && npm run dev",
+    "bot:dev": "cd bot && npm run dev",
+    "build": "npm run backend:build && npm run frontend:build && npm run bot:build",
+    "backend:build": "cd backend && npm run build",
+    "frontend:build": "cd frontend && npm run build",
+    "bot:build": "cd bot && npm run build",
+    "test": "npm run backend:test && npm run frontend:test && npm run bot:test",
+    "backend:test": "cd backend && npm test",
+    "frontend:test": "cd frontend && npm test",
+    "bot:test": "cd bot && npm test",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "setup": "npm install && npm run backend:setup && npm run frontend:setup && npm run bot:setup",
+    "backend:setup": "cd backend && npm install",
+    "frontend:setup": "cd frontend && npm install",
+    "bot:setup": "cd bot && npm install"
+  },
+  "keywords": ["tron", "usdt", "telegram", "blockchain", "lock-program", "tronbot"],
+  "author": "TronBot Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

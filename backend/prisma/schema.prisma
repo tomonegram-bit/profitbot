@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String    @id @default(cuid())
+  telegramUserId        String    @unique
+  username              String?
+  firstName             String?
+  lastName              String?
+  referralCode          String    @unique
+  referredByUserId      String?
+  payoutAddress         String?
+  payoutAddressUpdatedAt DateTime?
+  depositAddress        String    @unique
+  depositAddressKeyRef  String    // Encrypted private key reference
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // Relations
+  referredBy            User?     @relation("Referrals", fields: [referredByUserId], references: [id])
+  referrals             User[]    @relation("Referrals")
+  deposits              Deposit[]
+  lockLots              LockLot[]
+  payouts               Payout[]
+  
+  @@index([telegramUserId])
+  @@index([referralCode])
+  @@index([depositAddress])
+}
+
+model Deposit {
+  id              String        @id @default(cuid())
+  userId          String
+  txHash          String        @unique
+  fromAddress     String
+  amountMicro     BigInt        // Amount in micro units (6 decimals)
+  status          DepositStatus @default(detected)
+  confirmations   Int           @default(0)
+  blockNumber     BigInt?
+  detectedAt      DateTime      @default(now())
+  confirmedAt     DateTime?
+  
+  // Relations
+  user            User          @relation(fields: [userId], references: [id])
+  lockLot         LockLot?
+  
+  @@index([userId, status])
+  @@index([txHash])
+}
+
+model LockLot {
+  id                String      @id @default(cuid())
+  userId            String
+  depositId         String      @unique
+  principalMicro    BigInt      // Principal amount in micro units
+  startAt           DateTime
+  unlockAt          DateTime
+  status            LockStatus  @default(LOCKED)
+  targetMet         Boolean     @default(false)
+  requiredReferrals Int         @default(1)
+  rewardBps         Int         @default(1500) // 15% = 1500 basis points
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  user              User        @relation(fields: [userId], references: [id])
+  deposit           Deposit     @relation(fields: [depositId], references: [id])
+  payouts           Payout[]
+  
+  @@index([userId, status])
+  @@index([unlockAt])
+  @@index([status])
+}
+
+model Referral {
+  id                    String    @id @default(cuid())
+  referrerUserId        String
+  referredUserId        String
+  qualified             Boolean   @default(false)
+  qualifiedDepositId    String?
+  qualifiesForLotId     String?
+  qualifiedAt           DateTime?
+  createdAt             DateTime  @default(now())
+  
+  // Relations
+  referrer              User      @relation("Referrer", fields: [referrerUserId], references: [id])
+  referred              User      @relation("Referred", fields: [referredUserId], references: [id])
+  qualifiedDeposit      Deposit?  @relation(fields: [qualifiedDepositId], references: [id])
+  qualifiesForLot       LockLot?  @relation(fields: [qualifiesForLotId], references: [id])
+  
+  @@unique([referrerUserId, referredUserId])
+  @@index([referrerUserId])
+  @@index([referredUserId])
+}
+
+model Sweep {
+  id                    String      @id @default(cuid())
+  depositId             String
+  coldLegTxHash         String?
+  coldLegStatus         SweepStatus @default(pending)
+  coldLegBroadcastAt    DateTime?
+  coldLegConfirmedAt    DateTime?
+  feeLegTxHash          String?
+  feeLegStatus          SweepStatus @default(pending)
+  feeLegBroadcastAt     DateTime?
+  feeLegConfirmedAt     DateTime?
+  status                SweepStatus @default(pending)
+  error                 String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  
+  @@index([depositId])
+  @@index([status])
+}
+
+model TrxTopUp {
+  id              String      @id @default(cuid())
+  depositAddress  String
+  amountTrx       BigInt
+  txHash          String      @unique
+  purpose         String      // sweep_prep
+  createdAt       DateTime    @default(now())
+  
+  @@index([depositAddress])
+  @@index([txHash])
+}
+
+model Payout {
+  id                String       @id @default(cuid())
+  lotId             String
+  userId            String
+  amountMicro       BigInt       // Total payout amount
+  principalMicro    BigInt       // Principal portion
+  rewardMicro       BigInt       // Reward portion
+  toAddress         String
+  status            PayoutStatus @default(queued)
+  approvedByAdminId String?
+  approvedAt        DateTime?
+  txHash            String?
+  paidAt            DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  // Relations
+  lot               LockLot      @relation(fields: [lotId], references: [id])
+  user              User         @relation(fields: [userId], references: [id])
+  
+  @@index([lotId])
+  @@index([userId])
+  @@index([status])
+}
+
+model AdminUser {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  role          AdminRole @default(ADMIN)
+  totpSecret    String?   // Encrypted TOTP secret
+  totpEnabled   Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([email])
+}
+
+model OverrideRequest {
+  id                String             @id @default(cuid())
+  lotId             String
+  requestedByAdminId String
+  status            OverrideStatus     @default(pending_approval)
+  requestedChanges  Json
+  reason            String
+  evidenceUrls      Json?
+  approvedByAdminId String?
+  requestedAt       DateTime           @default(now())
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  
+  // Relations
+  lot               LockLot            @relation(fields: [lotId], references: [id])
+  requestedBy       AdminUser          @relation("RequestedBy", fields: [requestedByAdminId], references: [id])
+  approvedBy        AdminUser?         @relation("ApprovedBy", fields: [approvedByAdminId], references: [id])
+  
+  @@index([lotId])
+  @@index([status])
+}
+
+model OverrideAudit {
+  id                String    @id @default(cuid())
+  overrideRequestId String
+  lotId             String
+  userId            String
+  createdByAdminId  String
+  approvedByAdminId String
+  oldStatus         String
+  newStatus         String
+  oldTargetMet      Boolean
+  newTargetMet      Boolean
+  reason            String
+  evidenceUrls      Json?
+  ipAddress         String?
+  userAgent         String?
+  createdAt         DateTime  @default(now())
+  
+  @@index([lotId])
+  @@index([userId])
+  @@index([createdByAdminId])
+}
+
+model Config {
+  key       String   @id
+  value     Json
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+}
+
+enum DepositStatus {
+  detected
+  confirming
+  confirmed
+  swept
+  failed
+}
+
+enum LockStatus {
+  LOCKED
+  MATURED_LOCKED
+  ELIGIBLE
+  PAID
+  CANCELLED
+}
+
+enum SweepStatus {
+  pending
+  partial
+  completed
+  failed
+  needs_fee
+}
+
+enum PayoutStatus {
+  queued
+  approved
+  paid
+  failed
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+  AUDITOR
+}
+
+enum OverrideStatus {
+  pending_approval
+  approved
+  rejected
+}
