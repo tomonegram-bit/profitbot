@@ -5,11 +5,15 @@ WORKDIR /app
 # Copy package files
 COPY backend/package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including dev) so prisma CLI is available for migrations
+RUN npm ci
 
 # Copy source code
 COPY backend/ .
+
+# Copy entrypoint script
+COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Build the application
 RUN npm run build
@@ -24,5 +28,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/health || exit 1
 
-# Start the application
+# Use entrypoint to run migrations/seeds before starting
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["npm", "start"]
