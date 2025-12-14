@@ -1,0 +1,27 @@
+# Render service manifest for profitbot monorepo
+# NOTE: Render will use the Dockerfiles in the repository root for each service.
+# After creating services in the Render dashboard, link the required env vars
+# (DATABASE_URL, REDIS_URL, MASTER_ENCRYPTION_KEY, JWT_SECRET, TELEGRAM_TOKEN, etc.)
+
+services:
+  - type: web
+    name: profitbot-frontend
+    env: docker
+    branch: main
+    dockerfilePath: Dockerfile.frontend
+    # Render will build the Dockerfile and run the container's CMD
+
+  - type: web
+    name: profitbot-backend
+    env: docker
+    branch: main
+    dockerfilePath: Dockerfile.backend
+
+  - type: worker
+    name: profitbot-bot
+    env: docker
+    branch: main
+    dockerfilePath: Dockerfile.bot
+
+# Optional: you can optionally define managed databases in the Render UI and
+# then add their connection strings to the service environment variables.
