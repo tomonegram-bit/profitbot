@@ -1,3 +1,47 @@
+Deployment Guide
+================
+
+This document explains a simple, reliable way to run the prototype on a remote VPS (Ubuntu) so it stays live even when your laptop is off.
+
+Recommended approach
+- Rent a small VPS (DigitalOcean, Linode, Hetzner, AWS Lightsail) with Ubuntu 24+ and a public domain.
+- Use Docker + Docker Compose to run the backend, frontend and supporting services (Postgres, Redis) as defined in `docker-compose.yml`.
+- Optionally use the included GitHub Actions workflow to deploy automatically on pushes to `main`.
+
+Quick steps (manual)
+1. SSH to your server and run the setup script (as root):
+
+```bash
+sudo bash /home/deploy/profitbot/scripts/setup-server.sh
+```
+
+2. Configure DNS for your domain and create an nginx site that proxies requests to the appropriate container ports (example: internal `3001` for frontend, `3000` for backend).
+
+3. Obtain TLS certs with certbot:
+
+```bash
+sudo certbot --nginx -d yourdomain.example
+```
+
+4. As the `deploy` user, run the deploy script to pull latest images and start services:
+
+```bash
+sudo -u deploy bash -lc '/home/deploy/profitbot/scripts/deploy-to-server.sh /home/deploy/profitbot'
+```
+
+Using GitHub Actions (recommended for CI/CD)
+1. In your repository settings, add the following secrets:
+   - `SERVER_HOST` (your server IP or hostname)
+   - `SERVER_USER` (the ssh user, e.g. `deploy`)
+   - `SERVER_PORT` (optional, default 22)
+   - `SSH_PRIVATE_KEY` (the private key for `SERVER_USER` that has passwordless SSH access)
+
+2. Push to `main` and Actions will SSH to your server and run the deploy routine.
+
+Notes & security
+- Protect the SSH key carefully and create a dedicated `deploy` user with limited permissions.
+- For production use, enable firewall (ufw), fail2ban and rotate secrets periodically.
+- If you prefer a platform service (Render, Railway, Fly.io, Vercel), this repo can be adapted — I can add provider-specific files on request.
 # Deployment Guide - TRON Lock System
 
 ## ✅ Build Status
