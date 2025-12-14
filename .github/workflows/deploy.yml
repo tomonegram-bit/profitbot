@@ -27,10 +27,67 @@ jobs:
             cd profitbot
             git fetch --all --prune
             git reset --hard origin/main
+            # Pull images
             if command -v docker-compose >/dev/null 2>&1; then
               docker-compose pull || true
-              docker-compose up -d --remove-orphans
             else
               docker compose pull || true
+            fi
+
+            # Build backend image (ensure prisma CLI available in image)
+            if command -v docker-compose >/dev/null 2>&1; then
+              docker-compose build backend || true
+            else
+              docker compose build backend || true
+            fi
+
+            # Run migrations and seed using a short-lived migration container (skippable with SKIP_MIGRATIONS=1)
+            if [ "${{ secrets.SKIP_MIGRATIONS }}" != "1" ]; then
+              echo "Preparing network and env for migration container..."
+              # Ensure DB/Redis services are up so compose creates the network
+              if command -v docker-compose >/dev/null 2>&1; then
+                docker-compose up -d postgres redis || true
+              else
+                docker compose up -d postgres redis || true
+              fi
+
+              # Tag the built backend image for running migrations
+              MIGRATE_IMAGE=profitbot_backend_migrate:latest
+              if command -v docker-compose >/dev/null 2>&1; then
+                docker-compose build --no-cache --build-arg NODE_ENV=production backend || true
+                # get the image id and tag it
+                IMAGE_ID=$(docker-compose images -q backend || true)
+              else
+                docker compose build --no-cache --build-arg NODE_ENV=production backend || true
+                IMAGE_ID=$(docker compose images -q backend || true)
+              fi
+
+              if [ -n "$IMAGE_ID" ]; then
+                docker tag "$IMAGE_ID" "$MIGRATE_IMAGE" || true
+              fi
+
+              # Find the compose network (fallback to profitbot_default)
+              NETWORK=$(docker network ls --filter name=$(basename "$PWD")_default -q)
+              if [ -z "$NETWORK" ]; then
+                NETWORK=$(docker network ls --filter name=profitbot_default -q)
+              fi
+
+              # Use .env if present for environment variables
+              ENV_FILE=".env"
+              ENV_ARG=""
+              if [ -f "$ENV_FILE" ]; then
+                ENV_ARG="--env-file $ENV_FILE"
+              fi
+
+              echo "Running migrations in short-lived container..."
+              docker run --rm $ENV_ARG --network "$NETWORK" "$MIGRATE_IMAGE" sh -c "npx prisma migrate deploy && npx prisma db seed || true"
+            else
+              echo "SKIP_MIGRATIONS=1 set in secrets, skipping migrations"
+            fi
+
+            # Start services
+            if command -v docker-compose >/dev/null 2>&1; then
+              docker-compose up -d --remove-orphans
+            else
               docker compose up -d --remove-orphans
             fi
