@@ -10,12 +10,20 @@ services:
     branch: main
     dockerfilePath: Dockerfile.frontend
     # Render will build the Dockerfile and run the container's CMD
+    healthCheckPath: /api/health
+    healthCheckIntervalSeconds: 15
+    healthCheckTimeoutSeconds: 5
+    healthCheckGracePeriodSeconds: 60
 
   - type: web
     name: profitbot-backend
     env: docker
     branch: main
     dockerfilePath: Dockerfile.backend
+    healthCheckPath: /health
+    healthCheckIntervalSeconds: 15
+    healthCheckTimeoutSeconds: 5
+    healthCheckGracePeriodSeconds: 60
 
   - type: worker
     name: profitbot-bot
