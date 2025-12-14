@@ -1,5 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load local env (if present) so seeds can access secrets like COORDINATOR_JWT_SECRET_KEY
+dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
 
 const prisma = new PrismaClient();
 
@@ -60,6 +65,20 @@ async function main() {
         data: config
       });
       console.log(`Created config: ${config.key}`);
+    }
+  }
+
+  // Persist coordinator JWT if provided in env
+  const coordinatorJwt = process.env.COORDINATOR_JWT_SECRET_KEY;
+  if (coordinatorJwt) {
+    const existing = await prisma.config.findUnique({ where: { key: 'coordinator_jwt' } });
+    if (!existing) {
+      await prisma.config.create({
+        data: { key: 'coordinator_jwt', value: coordinatorJwt, updatedBy: 'system' }
+      });
+      console.log('Created config: coordinator_jwt');
+    } else {
+      console.log('coordinator_jwt already exists');
     }
   }
 

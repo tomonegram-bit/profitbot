@@ -1,18 +1,25 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
 
-export interface AppError extends Error {
+export class AppError extends Error {
   statusCode?: number;
   isOperational?: boolean;
+
+  constructor(message: string, statusCode = 500) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = true;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
 }
 
 export function errorHandler(
-  err: AppError,
+  err: AppError | Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const statusCode = err.statusCode || 500;
+  const statusCode = (err as AppError).statusCode || 500;
   const message = err.message || 'Internal Server Error';
 
   logger.error('Error:', {
@@ -35,12 +42,12 @@ export function errorHandler(
 }
 
 export function notFound(req: Request, res: Response, next: NextFunction) {
-  const error = new Error(`Not Found - ${req.originalUrl}`);
+  const error = new AppError(`Not Found - ${req.originalUrl}`, 404);
   res.status(404);
-  next(error as AppError);
+  next(error);
 }
 
-export function asyncHandler(fn: Function) {
+export function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

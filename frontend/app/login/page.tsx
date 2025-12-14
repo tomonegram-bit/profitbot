@@ -11,6 +11,7 @@ import {
   InputAdornment,
   IconButton,
   Alert,
+  Avatar,
   CircularProgress,
   Divider,
 } from '@mui/material';

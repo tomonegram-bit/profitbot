@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from '../index';
-import { authenticate, authorize } from '../middleware/auth';
+import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 import { tronService } from '../services/tron';
@@ -178,7 +178,7 @@ router.get('/wallet-balances', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), 
 
 // Get system health (admin only)
 router.get('/health', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHandler(async (req, res) => {
-  const health = {
+  const health: any = {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
@@ -209,7 +209,7 @@ router.get('/health', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHand
     logger.error('TRON network health check failed:', error);
   }
 
-  health.healthy = Object.values(health.services).every(status => status === 'healthy');
+  health.healthy = Object.values(health.services).every((status: any) => status === 'healthy');
 
   res.json(health);
 }));

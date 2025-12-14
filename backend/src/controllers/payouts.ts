@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from '../index';
-import { authenticate, authorize } from '../middleware/auth';
+import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 import { tronService } from '../services/tron';
@@ -91,7 +91,7 @@ router.get('/:payoutId', authenticate, authorize('ADMIN', 'SUPER_ADMIN', 'AUDITO
 }));
 
 // Mark payout as paid (admin only)
-router.post('/:payoutId/mark-paid', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHandler(async (req, res) => {
+router.post('/:payoutId/mark-paid', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHandler(async (req: AuthRequest, res) => {
   const { payoutId } = req.params;
   const { txHash } = req.body;
   const { userId } = req.user!;
@@ -164,7 +164,7 @@ router.post('/:payoutId/mark-paid', authenticate, authorize('ADMIN', 'SUPER_ADMI
 }));
 
 // Create payout (admin only)
-router.post('/', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHandler(async (req, res) => {
+router.post('/', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHandler(async (req: AuthRequest, res) => {
   const { lotId } = req.body;
   const { userId } = req.user!;
 
@@ -228,7 +228,7 @@ router.post('/', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHandler(a
 }));
 
 // Approve payout (admin only)
-router.post('/:payoutId/approve', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHandler(async (req, res) => {
+router.post('/:payoutId/approve', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), asyncHandler(async (req: AuthRequest, res) => {
   const { payoutId } = req.params;
   const { userId } = req.user!;
 

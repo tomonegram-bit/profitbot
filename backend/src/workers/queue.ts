@@ -52,6 +52,9 @@ export function setupWorkerQueue() {
   };
 }
 
+// Export a singleton workerQueue for services to use
+export const workerQueue = setupWorkerQueue();
+
 function setupDepositWorker(connection: any) {
   const depositWorker = new Worker('deposits', async (job: Job) => {
     logger.info(`Processing deposit job: ${job.id}`, job.data);

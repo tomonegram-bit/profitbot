@@ -85,6 +85,48 @@ const navItems: NavItem[] = [
   },
 ];
 
+const adminNavItems: NavItem[] = [
+  {
+    id: 'admin-settings',
+    label: 'Admin Settings',
+    icon: <Settings />,
+    path: '/admin/settings',
+  },
+];
+
+const clientNavItems: NavItem[] = [
+  {
+    id: 'client-dashboard',
+    label: 'My Dashboard',
+    icon: <Dashboard />,
+    path: '/client/dashboard',
+  },
+  {
+    id: 'client-deposits',
+    label: 'My Deposits',
+    icon: <AccountBalance />,
+    path: '/client/deposits',
+  },
+  {
+    id: 'client-payouts',
+    label: 'My Payouts',
+    icon: <ArrowUpward />,
+    path: '/client/payouts',
+  },
+  {
+    id: 'client-referrals',
+    label: 'Referrals',
+    icon: <BarChart />,
+    path: '/client/referrals',
+  },
+  {
+    id: 'client-history',
+    label: 'Transaction History',
+    icon: <History />,
+    path: '/client/history',
+  },
+];
+
 const bottomNavItems: NavItem[] = [
   {
     id: 'settings',

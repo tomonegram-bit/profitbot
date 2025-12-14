@@ -59,7 +59,7 @@ export function verifyPassword(password: string, hash: string): Promise<boolean>
     
     crypto.pbkdf2(password, salt, 10000, 64, 'sha512', (err, derivedKey) => {
       if (err) reject(err);
-      resolve(crypto.timingSafeEquals(hashBuffer, derivedKey));
+      resolve(crypto.timingSafeEqual(hashBuffer, derivedKey));
     });
   });
 }

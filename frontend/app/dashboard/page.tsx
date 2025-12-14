@@ -27,7 +27,7 @@ import {
   AccessTime,
 } from '@mui/icons-material';
 import { Layout } from '@/lib/layout/Layout';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 // Sample data for charts
 const depositData = [
@@ -375,7 +375,7 @@ export default function Dashboard() {
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 229, 255, 0.1)" />
                       <XAxis dataKey="name" stroke="#B2EBF2" fontSize={12} />
                       <YAxis stroke="#B2EBF2" fontSize={12} />
-                      <Tooltip
+                      <RechartsTooltip
                         contentStyle={{
                           backgroundColor: 'rgba(13, 43, 47, 0.95)',
                           border: '1px solid rgba(0, 229, 255, 0.3)',
@@ -421,7 +421,7 @@ export default function Dashboard() {
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 229, 255, 0.1)" />
                       <XAxis dataKey="name" stroke="#B2EBF2" fontSize={12} />
                       <YAxis stroke="#B2EBF2" fontSize={12} />
-                      <Tooltip
+                      <RechartsTooltip
                         contentStyle={{
                           backgroundColor: 'rgba(13, 43, 47, 0.95)',
                           border: '1px solid rgba(0, 229, 255, 0.3)',

@@ -3,7 +3,7 @@ import config from '../config';
 import { logger } from '../utils/logger';
 
 class TronService {
-  private tronWeb: TronWeb;
+  private tronWeb: any;
   private usdtContract: any;
 
   constructor() {

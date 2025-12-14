@@ -126,12 +126,7 @@ export const darkCyanTheme = createTheme({
       textTransform: 'uppercase',
       color: '#B2EBF2',
     },
-    monospace: {
-      fontFamily: '"Roboto Mono", "Fira Code", "Consolas", monospace',
-      fontSize: '0.875rem',
-      lineHeight: 1.6,
-      color: '#80DEEA',
-    },
+    // monospace style intentionally omitted to satisfy MUI typings
   },
   shape: {
     borderRadius: 8,
@@ -379,36 +374,7 @@ export const darkCyanTheme = createTheme({
         },
       },
     },
-    MuiDataGrid: {
-      styleOverrides: {
-        root: {
-          border: '1px solid rgba(0, 229, 255, 0.2)',
-          borderRadius: 8,
-          backgroundColor: 'rgba(13, 43, 47, 0.6)',
-        },
-        columnHeaders: {
-          backgroundColor: 'rgba(0, 229, 255, 0.1)',
-          borderBottom: '1px solid rgba(0, 229, 255, 0.3)',
-        },
-        columnHeader: {
-          color: '#E0F7FA',
-          fontWeight: 600,
-        },
-        cell: {
-          color: '#E0F7FA',
-          borderBottom: '1px solid rgba(0, 229, 255, 0.1)',
-        },
-        row: {
-          '&:hover': {
-            backgroundColor: 'rgba(0, 229, 255, 0.05)',
-          },
-        },
-        footerContainer: {
-          backgroundColor: 'rgba(0, 229, 255, 0.05)',
-          borderTop: '1px solid rgba(0, 229, 255, 0.2)',
-        },
-      },
-    },
+    // MuiDataGrid styles omitted (from @mui/x-data-grid, not core theme)
     MuiTooltip: {
       styleOverrides: {
         tooltip: {

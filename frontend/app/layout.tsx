@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk, Roboto_Mono } from 'next/font/google';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { AuthProvider } from '@/lib/auth/AuthProvider';
-import darkCyanTheme from '@/lib/themes/darkCyan';
 import './globals.css';
+import RootLayoutClient from './layout-client';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -38,12 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${robotoMono.variable}`}>
       <body className={inter.className}>
-        <ThemeProvider theme={darkCyanTheme}>
-          <CssBaseline />
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </ThemeProvider>
+        <RootLayoutClient>
+          {children}
+        </RootLayoutClient>
       </body>
     </html>
   );

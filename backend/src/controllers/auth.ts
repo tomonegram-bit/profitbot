@@ -59,8 +59,8 @@ router.post('/admin/login', asyncHandler(async (req, res) => {
 
   const token = jwt.sign(
     { userId: admin.id, email: admin.email, role: admin.role },
-    config.jwtSecret,
-    { expiresIn: config.jwtExpiresIn }
+    config.jwtSecret as jwt.Secret,
+    { expiresIn: config.jwtExpiresIn as jwt.SignOptions['expiresIn'] }
   );
 
   res.json({
@@ -89,8 +89,7 @@ router.post('/admin/setup-totp', authenticate, asyncHandler(async (req: AuthRequ
   }
 
   const secret = speakeasy.generateSecret({
-    name: config.totpServiceName,
-    account: admin.email,
+    name: `${config.totpServiceName}:${admin.email}`,
     length: 32
   });
 

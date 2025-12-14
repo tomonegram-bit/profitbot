@@ -25,13 +25,21 @@ export let workerQueue: any;
 
 async function startServer() {
   try {
-    // Initialize Redis
-    redis = await createRedis();
-    logger.info('Redis connected successfully');
+    // Initialize Redis (with timeout)
+    try {
+      const redisTimeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Redis connection timeout')), 5000)
+      );
+      redis = await Promise.race([createRedis(), redisTimeoutPromise]);
+      logger.info('Redis connected successfully');
 
-    // Initialize Worker Queue
-    workerQueue = setupWorkerQueue();
-    logger.info('Worker queue initialized');
+      // Initialize Worker Queue
+      workerQueue = setupWorkerQueue();
+      logger.info('Worker queue initialized');
+    } catch (redisError) {
+      logger.warn('Redis connection failed, starting without queue support:', redisError instanceof Error ? redisError.message : redisError);
+      // Continue without Redis
+    }
 
     // Middleware
     app.use(helmet());

@@ -18,6 +18,7 @@ import {
 import {
   Menu as MenuIcon,
   Notifications,
+  Person,
   AccountCircle,
   Settings,
   Logout,

@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
+    "dev:mock": "node src/standalone-server.js",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "jest",
